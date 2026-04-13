@@ -2,7 +2,6 @@
 """
 Region-Constrained Motif-Based Active Site Analysis
 
-Combines the best of both approaches:
 1. Uses alignment to identify the conserved catalytic domain region
 2. Searches for motif only within that region
 3. Scores based on strict chemistry rules
@@ -165,7 +164,7 @@ class RegionConstrainedMotifFinder:
     
     def select_reference(self):
         """Select best available reference"""
-        for ref_id in ['Q9V3D8', 'A1Z9G3', 'P00727']:
+        for ref_id in ['Q9V3D8', 'P00727']:
             if ref_id in self.sequences:
                 print(f"Using reference: {ref_id}")
                 return ref_id
