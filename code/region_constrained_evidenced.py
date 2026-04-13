@@ -60,7 +60,7 @@ class RegionConstrainedMotifFinder:
     #
     # Catalytic sites have NO compatible class: mutagenesis shows all tested
     # substitutions at Lys339 reduce activity (Gu & Walling 2002), and Arg413
-    # is essential for transition-state stabilisation (Kim & Lipscomb 1995).
+    # is essential for transition-state stabilisation (Sträter & Lipscomb 1995).
     MOTIF_PATTERN = {
 
         # Lys327 (blLAP Lys250): coordinates site 1 Zn via side-chain amino group.
@@ -143,7 +143,7 @@ class RegionConstrainedMotifFinder:
         },
 
         # Arg413 (blLAP Arg336): stabilises the gem-diolate transition state
-        # (Kim & Lipscomb 1995). Essential for catalysis; no mutagenesis data
+        # (Sträter & Lipscomb 1995). Essential for catalysis; no mutagenesis data
         # supports any substitution retaining activity.
         # NO compatible class — any divergence scored NON_FUNCTIONAL.
         'cat_2': {
