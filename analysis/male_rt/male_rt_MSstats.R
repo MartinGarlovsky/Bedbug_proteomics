@@ -1113,7 +1113,7 @@ ggtree(treeio::drop.tip(best_tree_bs2, "P00727"), layout = "equal_angle") %<+% s
   geom_hilight(node=93, fill = "#D81B60", type="encircle") +
   geom_hilight(node=97, fill = "#1E88E5", type="encircle") +
   geom_hilight(node=158, fill = "#FFC107", type="encircle") +
-  geom_tippoint(aes(colour = Order, shape = species, fill = Order), stroke = 1.5) +
+  geom_tippoint(aes(colour = Order, shape = species, fill = Order), stroke = 1.5, size = 5) +
   #scale_colour_viridis_d(option = "H") +
   scale_fill_manual(values = c("white", "white", "white", "white")) +
   scale_shape_manual(guide = "none",
