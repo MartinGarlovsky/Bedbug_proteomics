@@ -1055,6 +1055,7 @@ gheatmap(dmel_tree_plot, motifmatrix, offset=0.5, width=1,
 
 # tree of all S-Lap/grsm orthologs
 all_slap_orths_tree <- ggtree(best_tree_bs, branch.length = "none") %<+% slap_lab +
+  #geom_tippoint(aes(colour = Order), stroke = 1.5, size = 5) +
   #geom_text(aes(label=node), hjust=-.3) +
   geom_cladelabel(node = 169, label = "granny-smith", align = TRUE, offset = 11, barsize = 1.5) +
   geom_cladelabel(node = 155, label = "S-Lap cluster 2", align = TRUE, offset = 11, barsize = 1.5) +
@@ -1078,7 +1079,7 @@ all_slap_orths_map <- gheatmap(all_slap_orths_tree, motifmatrix, offset = 4.6, w
 zinc_binding <- read_tsv("SLAP_activity/SLAP_orths_zn_zn/key_file.tsv") %>%
   mutate(PROT = gsub(".json", "", x = gsub(".*_", "", x = filename))) %>%
   select(PROT, protein_id) %>%
-  inner_join(read_csv("SLAP_activity/af3_comparisons/zinc_summary_chimerax.csv") %>%
+  inner_join(read_csv("SLAP_activity/af3_comparisons/zinc_summary.csv") %>%
                mutate(PROT = gsub("_.*", "", x = gsub("af_protein_ligand_", "", x = protein))),
              by = "PROT") %>%
   select(-PROT)
@@ -1086,8 +1087,24 @@ zinc_binding <- read_tsv("SLAP_activity/SLAP_orths_zn_zn/key_file.tsv") %>%
 # make matrix
 zn <- zinc_binding %>%
   select(protein_id, zn_index, call) %>%
-  pivot_wider(names_from = zn_index, values_from = call)
-zn_max <- as.matrix(zn[, -1])
+  pivot_wider(names_from = zn_index, values_from = call) %>%
+  left_join(zinc_binding %>% distinct(protein_id, overall_call)) %>%
+  left_join(slap_lab, by = c("protein_id" = "Protein"))
+
+xtabs(~ HOG, data = zn %>% filter(Order != "Artiodactyla"))
+# all grsm orths active
+xtabs(~ HOG + overall_call, data = zn %>% filter(Order != "Artiodactyla"))
+
+xtabs(~ species + overall_call, data = zn %>% filter(Order != "Artiodactyla", HOG != "N0.HOG0006317"))
+xtabs(~ Order + overall_call, data = zn %>% filter(Order != "Artiodactyla", HOG != "N0.HOG0006317"))
+
+xtabs(~ species + overall_call, data = zn %>% filter(Order != "Artiodactyla", HOG == "N0.HOG0001179"))
+xtabs(~ species + overall_call, data = zn %>% filter(Order != "Artiodactyla", HOG == "N0.HOG0000814"))
+
+xtabs(~ Order + overall_call, data = zn %>% filter(Order != "Artiodactyla", HOG == "N0.HOG0001179"))
+xtabs(~ Order + overall_call, data = zn %>% filter(Order != "Artiodactyla", HOG == "N0.HOG0000814"))
+
+zn_max <- as.matrix(zn[, 2:4])
 rownames(zn_max) <- zn$protein_id
 
 # add alphafold results to the plot
@@ -1095,14 +1112,21 @@ gheatmap(all_slap_orths_map, zn_max, offset=9.5, width=0.1,
          colnames = TRUE, legend_title="binding", color = "black",
          colnames_angle = 45, hjust=1) +
   #scale_fill_viridis_d() +
-  scale_fill_manual(values = c("lightpink", "red",
-                               #"red", "white",
-                               viridis::viridis(n = 4)[2:3],
-                               "white",
-                               #"grey",
-                               viridis::viridis(n = 4)[4])) +
+  # scale_fill_manual(values = c("lightpink", "red",
+  #                              #"red", "white",
+  #                              viridis::viridis(n = 4)[2:3],
+  #                              "white",
+  #                              #"grey",
+  #                              viridis::viridis(n = 4)[4])) +
+  scale_fill_manual(values = c("red", # canonical
+                               "lightpink", "red", # compatible, conserved
+                               viridis::viridis(n = 4)[c(2, 4)], # active, inactive
+                               "white", # non canonical
+                               "white", # non functional
+                               viridis::viridis(n = 4)[3]) # uncertain
+                    ) +
   NULL
-#ggsave("plots/male_rt/SLAP_PLOTS/ml_tree_SLAPs.pdf", width = 10, height = 12)
+#ggsave("plots/male_rt/SLAP_PLOTS/ml_tree_SLAPs_chimeraX.pdf", width = 10, height = 12)
 
 # slightly truncate the long branch to granny-smith for plotting
 best_tree_bs2 <- best_tree_bs
@@ -1199,6 +1223,17 @@ gheatmap(p2, zn_max, offset=5, width=0.1,
 cim_slap_tree <- ggtree(slap_trim, branch.length = "none") %<+% slap_lab +
   geom_tiplab(aes(label = Protein2))
 
+gheatmap(cim_slap_tree, zn_max, offset=0.2, width=1,
+         colnames = TRUE, legend_title="substitution", color = "black",
+         colnames_angle = 45, hjust=1) +
+  scale_fill_manual(values = c("red", # canonical
+                               viridis::viridis(n = 4)[c(2, 4)], # active, inactive
+                               "white", # non canonical
+                               viridis::viridis(n = 4)[3]) # uncertain
+                    ) +
+  NULL
+#ggsave("plots/male_rt/SLAP_PLOTS/CIM_SLAPs_CHIMERAX.jpg", width = 10, height = 4)
+
 cim_slap_motif <- gheatmap(cim_slap_tree, motifmatrix, offset=0.2, width=1,
                            colnames = TRUE, legend_title="substitution", color = "black",
                            colnames_angle = 45, hjust=1) +
@@ -1231,6 +1266,7 @@ gheatmap(cim_res_mat, zn_max, offset=16, width=0.25,
   #                              "red", "white", "white", "grey")) +
   NULL
 #ggsave("plots/male_rt/SLAP_PLOTS/CIM_SLAPs_COMP.pdf", width = 10, height = 4)
+
 
 
 # > ranked abundance ####
